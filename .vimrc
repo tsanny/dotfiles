@@ -16,6 +16,7 @@ set expandtab               " Use spaces instead of tabs
 set tabstop=4               " Tab width
 set shiftwidth=4            " Indent width
 set smartindent             " Smart auto-indent
+set scrolloff=15
 
 " --- Search ---
 set ignorecase              " Case insensitive...

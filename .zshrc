@@ -111,3 +111,62 @@ export PHP_INI_SCAN_DIR="/Users/sf.tsany/.config/herd-lite/bin:$PHP_INI_SCAN_DIR
 
 . "$HOME/.local/bin/env"
 export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
+
+
+
+
+
+# Function to compress a video file using ffmpeg and save it to the 
+# source file's directory.
+# Usage: compressvid <input_file.mov>
+compressvid() {
+  # Check if a file was provided
+  if [ -z "$1" ]; then
+    echo "Error: No input file specified."
+    echo "Usage: compressvid <input_file>"
+    return 1
+  fi
+
+  # 1. Get the absolute path to the input file
+  # Note: The 'readlink -f' command is a standard way to resolve paths.
+  local INPUT_PATH=$(readlink -f "$1")
+
+  # Check if the file exists (using the resolved path)
+  if [ ! -f "$INPUT_PATH" ]; then
+    echo "Error: File not found or path could not be resolved: '$1'"
+    return 1
+  fi
+
+  # 2. Extract components using Zsh parameter expansion
+  # ${INPUT_PATH:h} - Head (directory path)
+  # ${INPUT_PATH:t:r} - Tail (filename) and Root (remove extension)
+  local INPUT_DIR="${INPUT_PATH:h}"
+  local FILENAME_ROOT="${INPUT_PATH:t:r}"
+  
+  # 3. Define the full path for the output file
+  local OUTPUT_FILE="${INPUT_DIR}/compressed_${FILENAME_ROOT}.mp4"
+
+  # Check if the output file already exists
+  if [ -f "$OUTPUT_FILE" ]; then
+    echo "Warning: Output file '$OUTPUT_FILE' already exists. Overwriting in 5 seconds (Ctrl+C to cancel)..."
+    sleep 5
+  fi
+
+  echo "🎥 Starting compression..."
+  echo "Input:  '$INPUT_PATH'"
+  echo "Output: '$OUTPUT_FILE'"
+  echo "---"
+
+  # The ffmpeg command
+  ffmpeg -i "$INPUT_PATH" -c:v libx264 -crf 23 -c:a aac -b:a 128k "$OUTPUT_FILE"
+  
+  # Check the exit status of ffmpeg
+  if [ $? -eq 0 ]; then
+    echo "---"
+    echo "✅ Compression complete!"
+  else
+    echo "---"
+    echo "❌ Compression failed. Check ffmpeg output for errors."
+    return 1
+  fi
+}
